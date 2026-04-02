@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexAutomate | Settings</title>
+    <link rel="stylesheet" href="/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #334155; background: #1e293b; color: white; }
+        .btn-submit { background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .btn-submit:hover { background: #2563eb; }
+        .alert-success { background: #064e3b; color: #34d399; padding: 10px; border-radius: 6px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">NexAutomate</div>
+        <nav>
+            <a href="/" class="nav-item">Dashboard</a>
+            <a href="/agent" class="nav-item">AI Admin Assistant</a>
+            <a href="/settings" class="nav-item active">Settings / Voice AI</a>
+            <a href="/campaign" class="nav-item">Voice Campaigns</a>
+        </nav>
+    </div>
+
+    <main class="content">
+        <header>
+            <h1>Bot Settings</h1>
+        </header>
+
+        <section class="card">
+            <h3>Voice AI Provider Configuration</h3>
+            <p>Select which Voice AI API to use for outbound scheduling and follow-up calls.</p>
+            <br>
+            
+            <script>
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get('success')) {
+                    document.write('<div class="alert-success">Settings saved successfully!</div>');
+                }
+            </script>
+
+            <form action="/settings" method="POST">
+                <div class="form-group">
+                    <label>Active Voice Provider</label>
+                    <select name="voiceProvider">
+                        <option value="bland" <%= settings.voiceProvider === 'bland' ? 'selected' : '' %>>Bland AI</option>
+                        <option value="retell" <%= settings.voiceProvider === 'retell' ? 'selected' : '' %>>Retell AI</option>
+                        <option value="vapi" <%= settings.voiceProvider === 'vapi' ? 'selected' : '' %>>Vapi AI</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Bland AI API Key</label>
+                    <input type="password" name="blandApiKey" value="<%= settings.blandApiKey %>" placeholder="sk-...">
+                </div>
+
+                <div class="form-group">
+                    <label>Retell AI API Key</label>
+                    <input type="password" name="retellApiKey" value="<%= settings.retellApiKey %>" placeholder="key_...">
+                </div>
+
+                <div class="form-group">
+                    <label>Vapi AI API Key</label>
+                    <input type="password" name="vapiApiKey" value="<%= settings.vapiApiKey %>" placeholder="Public or Private API Key">
+                </div>
+
+                <div class="form-group">
+                    <label>Vapi Assistant ID</label>
+                    <input type="text" name="vapiAssistantId" value="<%= settings.vapiAssistantId %>" placeholder="UUID of your assistant">
+                </div>
+
+                <button type="submit" class="btn-submit">Save Settings</button>
+            </form>
+        </section>
+
+        <section class="card" style="margin-top: 20px;">
+            <h3>Voice AI Prompts & Instructions</h3>
+            <p>You can manage how the AI talks during voice calls below.</p>
+            <textarea style="width:100%; height:150px; background: #1e293b; color: #94a3b8; border: 1px solid #334155; padding: 10px; border-radius: 6px;" readonly>
+# System Prompt for Incoming Outbound Calls:
+"You are Viraj Singh from NexAutomate. You are calling the user because they requested more info or missed a message follow-up. 
+- If they ask about Sales/Websites: Pitch your AI services, ask for budget and requirements.
+- If it's a friend/personal: Speak casually in Hindi."
+            </textarea>
+            <p style="font-size: 12px; color: #64748b; margin-top: 10px;">(This is managed centrally inside your voiceService.js integration)</p>
+        </section>
+    </main>
+</body>
+</html>

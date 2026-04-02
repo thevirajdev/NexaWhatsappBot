@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexAutomate | AI Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">NexAutomate</div>
+        <nav>
+            <a href="/" class="nav-item active">Dashboard</a>
+            <a href="/agent" class="nav-item">AI Admin Assistant</a>
+            <a href="/settings" class="nav-item">Settings / Voice AI</a>
+            <a href="/campaign" class="nav-item">Voice Campaigns</a>
+        </nav>
+    </div>
+
+    <main class="content">
+        <header>
+            <h1>Bot Overview</h1>
+            <div class="header-right">
+                <div class="status-indicator">
+                    <span class="dot <%= isReady ? 'online' : 'offline' %>"></span>
+                    <%= isReady ? 'WhatsApp Live' : 'WhatsApp Offline' %>
+                </div>
+                <div class="status-indicator">
+                    <span class="dot <%= dbStatus ? 'online' : 'offline' %>"></span>
+                    <%= dbStatus ? 'DB Connected' : 'DB Offline' %>
+                </div>
+                <a href="/download-excel" class="btn-primary" style="margin-left: 10px;">
+                    Export Excel Data
+                </a>
+                <button id="toggle-manual-override" class="btn-secondary" style="margin-left: 10px;">
+                    <%= manualOverride ? 'Bot Paused' : 'Bot Active' %>
+                </button>
+            </div>
+        </header>
+
+        <% if (currentQR) { %>
+            <section class="qr-section card">
+                <h3>Authentication Required</h3>
+                <p>Scan the QR code below to connect your WhatsApp account.</p>
+                <div id="qrcode" class="qr-code"></div>
+                <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+                <script>
+                    new QRCode(document.getElementById("qrcode"), {
+                        text: "<%= currentQR %>",
+                        width: 256,
+                        height: 256,
+                        colorDark : "#1e293b",
+                        colorLight : "#ffffff"
+                    });
+                </script>
+            </section>
+        <% } %>
+
+        <div class="stats-grid">
+            <div class="stats-card card">
+                <span class="stats-label">Total Messages</span>
+                <span class="stats-value"><%= stats.messages %></span>
+            </div>
+            <div class="stats-card card">
+                <span class="stats-label">Unique Chats</span>
+                <span class="stats-value"><%= stats.chats %></span>
+            </div>
+            <div class="stats-card card">
+                <span class="stats-label">Leads Captured</span>
+                <span class="stats-value"><%= stats.leads %></span>
+            </div>
+        </div>
+
+        <section class="data-section">
+            <div class="card table-card">
+                <h3>Recent Conversations</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Messages</th>
+                            <th>Last Interaction</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% recentChats.forEach(chat => { %>
+                            <tr>
+                                <td><%= chat.userName || chat.userId %></td>
+                                <td><%= chat.messages.length %></td>
+                                <td><%= new Date(chat.lastInteraction).toLocaleString() %></td>
+                            </tr>
+                        <% }) %>
+                        <% if (recentChats.length === 0) { %>
+                            <tr><td colspan="3" class="empty">No recent chats found.</td></tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card table-card">
+                <h3>Recent Leads</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Interest/Needs</th>
+                            <th>Budget</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% recentLeads.forEach(lead => { %>
+                            <tr>
+                                <td><%= lead.userName %></td>
+                                <td>
+                                    <div style="font-weight: 600;"><%= lead.interest %></div>
+                                    <div style="font-size: 0.75rem; color: var(--text-secondary);"><%= lead.requirements || 'No details' %></div>
+                                </td>
+                                <td><%= lead.budget || 'N/A' %></td>
+                                <td><span class="badge badge-<%= lead.status %>"><%= lead.status %></span></td>
+                            </tr>
+                        <% }) %>
+                        <% if (recentLeads.length === 0) { %>
+                            <tr><td colspan="4" class="empty">No leads captured yet.</td></tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        document.getElementById('toggle-manual-override').addEventListener('click', async () => {
+            const response = await fetch('/toggle-override', { method: 'POST' });
+            const data = await response.json();
+            window.location.reload();
+        });
+        
+        // Auto refresh every 30 seconds if QR is NOT showing
+        <% if (!currentQR) { %>
+        setTimeout(() => window.location.reload(), 30000);
+        <% } %>
+    </script>
+</body>
+</html>
