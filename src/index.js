@@ -79,9 +79,15 @@ app.use('/vapi-webhook', vapiWebhook);
 
 // Authentication Middleware
 const isAuthenticated = (req, res, next) => {
+    // If WhatsApp is NOT connected yet, allow access to the Root (which shows the QR)
+    if (!isReady) {
+        return next();
+    }
+
     if (req.session.authenticated) {
         return next();
     }
+    
     res.redirect('/login');
 };
 
@@ -148,8 +154,7 @@ app.get('/', isAuthenticated, async (req, res) => {
 app.get('/login', async (req, res) => {
     if (req.session.authenticated) return res.redirect('/');
     
-    // If WhatsApp is NOT ready, we can't send an OTP. 
-    // They must scan the QR on the main page first.
+    // If WhatsApp is NOT ready, we must show the QR first
     if (!isReady) {
         return res.redirect('/');
     }
