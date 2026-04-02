@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexAutomate | Connect WhatsApp</title>
+    <link rel="stylesheet" href="/style.css">
+    <meta http-equiv="refresh" content="10"> <!-- Auto refresh every 10s to check login status -->
+</head>
+<body class="auth-page">
+    <div class="auth-container">
+        <h1>📲 Connect WhatsApp</h1>
+        <p>Your bot is currently offline. Scan the QR code with your WhatsApp Link Devices to start.</p>
+
+        <% if (qrDataUrl) { %>
+            <div class="qr-box">
+                <img src="<%= qrDataUrl %>" alt="WhatsApp QR Code">
+            </div>
+            <p style="margin-top: 15px; color: #666;">Once scanned, wait a moment. The page will refresh automatically.</p>
+        <% } else { %>
+            <div class="alert alert-info">
+                <p>⌛ Generating QR Code...</p>
+                <p style="font-size: 14px;">If this takes too long, please check the server logs.</p>
+            </div>
+        <% } %>
+
+        <div class="auth-footer">
+            <p>Dashboard Security: Secured by NexAutomate OTP</p>
+        </div>
+    </div>
+</body>
+</html>

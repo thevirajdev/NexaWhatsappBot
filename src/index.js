@@ -23,6 +23,9 @@ const contactService = require('./services/contactService');
 const multer = require('multer');
 const xlsxLib = require('xlsx');
 const vapiWebhook = require('./routes/vapiWebhook');
+const session = require('express-session');
+const cookieParser = require('cookie-parser');
+const qrcodeLib = require('qrcode');
 
 // Multer setup for Excel uploads
 const upload = multer({ dest: 'uploads/' });
@@ -64,19 +67,44 @@ connectDB();
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'nex-automate-super-secret',
+    resave: false,
+    saveUninitialized: true,
+    cookie: { maxAge: 7 * 24 * 60 * 60 * 1000 } // 7 days
+}));
 app.use('/vapi-webhook', vapiWebhook);
+
+// Authentication Middleware
+const isAuthenticated = (req, res, next) => {
+    if (req.session.authenticated) {
+        return next();
+    }
+    res.redirect('/login');
+};
 
 // Routes
 let currentQR = null;
 let isReady = false;
 
-app.get('/', async (req, res) => {
+app.get('/', isAuthenticated, async (req, res) => {
+    // If WhatsApp is NOT ready, show the QR code page instead of the dashboard
+    if (!isReady) {
+        let qrDataUrl = null;
+        if (currentQR) {
+            qrDataUrl = await qrcodeLib.toDataURL(currentQR);
+        }
+        return res.render('connect', { qrDataUrl });
+    }
+
     try {
         // Fetch Stats
         const totalChats = await Chat.countDocuments();
         const totalMessages = await Chat.aggregate([
             { $unwind: "$messages" },
-            { $count: "count" }
+            { $group: { _id: null, count: { $sum: 1 } } }
         ]);
         const totalLeads = await Lead.countDocuments();
 
@@ -115,6 +143,60 @@ app.get('/', async (req, res) => {
             dbStatus: false
         });
     }
+});
+
+app.get('/login', async (req, res) => {
+    if (req.session.authenticated) return res.redirect('/');
+    
+    // If WhatsApp is NOT ready, we can't send an OTP. 
+    // They must scan the QR on the main page first.
+    if (!isReady) {
+        return res.redirect('/');
+    }
+
+    res.render('login', { error: null, step: 'request' });
+});
+
+app.get('/send-otp', async (req, res) => {
+    if (!isReady) return res.json({ success: false, error: 'WhatsApp is not connected.' });
+    
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    req.session.otp = otp;
+    req.session.otpExpiry = Date.now() + 5 * 60 * 1000; // 5 mins
+
+    try {
+        // Find owner ID or use admin phone
+        const myId = whatsappClient.client.info.wid._serialized;
+        console.log(`[AUTH] Sending OTP ${otp} to owner: ${myId}`);
+        await whatsappClient.sendMessage(myId, `🔐 *NexAutomate Security*\n\nYour dashboard login OTP is: *${otp}*\n\nValid for 5 minutes. If you did not request this, ignore.`);
+        res.json({ success: true });
+    } catch (err) {
+        console.error("OTP send failed:", err);
+        res.json({ success: false, error: 'Failed to send OTP to WhatsApp.' });
+    }
+});
+
+app.post('/verify-otp', (req, res) => {
+    const { otp } = req.body;
+    
+    if (!req.session.otp || Date.now() > req.session.otpExpiry) {
+        return res.render('login', { error: 'OTP expired or not found. Request a new one.', step: 'verify' });
+    }
+
+    if (otp === req.session.otp) {
+        req.session.authenticated = true;
+        delete req.session.otp;
+        delete req.session.otpExpiry;
+        res.redirect('/');
+    } else {
+        res.render('login', { error: 'Invalid OTP. Please try again.', step: 'verify' });
+    }
+});
+
+app.get('/logout', (req, res) => {
+    req.session.destroy();
+    res.redirect('/login');
 });
 
 app.post('/toggle-override', (req, res) => {

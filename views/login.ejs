@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexAutomate | Secure Login</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body class="auth-page">
+    <div class="auth-container">
+        <h1>🔒 NexAutomate Security</h1>
+        <p>Access to this dashboard is restricted. A 6-digit OTP will be sent to your WhatsApp.</p>
+
+        <% if (error) { %>
+            <div class="alert alert-danger"><%= error %></div>
+        <% } %>
+
+        <div id="otp-request">
+            <button onclick="sendOTP()" id="otp-btn" class="btn btn-primary">Send OTP via WhatsApp</button>
+            <p id="otp-status" style="margin-top: 10px;"></p>
+        </div>
+
+        <form action="/verify-otp" method="POST" id="otp-verify" style="display: none;">
+            <div class="form-group">
+                <label for="otp">Enter 6-Digit OTP</label>
+                <input type="text" name="otp" id="otp" placeholder="123456" required maxlength="6">
+            </div>
+            <button type="submit" class="btn btn-success">Verify & Login</button>
+        </form>
+
+        <div class="auth-footer">
+            <p>Once verified, your session will be saved for 7 days.</p>
+        </div>
+    </div>
+
+    <script>
+        async function sendOTP() {
+            const btn = document.getElementById('otp-btn');
+            const status = document.getElementById('otp-status');
+            const form = document.getElementById('otp-verify');
+            const requestDiv = document.getElementById('otp-request');
+
+            btn.disabled = true;
+            status.innerText = "Sending OTP...";
+
+            try {
+                const response = await fetch('/send-otp');
+                const data = await response.json();
+                if (data.success) {
+                    status.innerText = "✅ OTP sent to your WhatsApp number!";
+                    btn.style.display = "none";
+                    form.style.display = "block";
+                } else {
+                    status.innerText = "❌ Error: " + data.error;
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                status.innerText = "❌ Failed to connect to server.";
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

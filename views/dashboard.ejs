@@ -15,6 +15,7 @@
             <a href="/agent" class="nav-item">AI Admin Assistant</a>
             <a href="/settings" class="nav-item">Settings / Voice AI</a>
             <a href="/campaign" class="nav-item">Voice Campaigns</a>
+            <a href="/logout" class="nav-item" style="margin-top: auto; color: var(--offline);">Logout</a>
         </nav>
     </div>
 
@@ -39,23 +40,6 @@
             </div>
         </header>
 
-        <% if (currentQR) { %>
-            <section class="qr-section card">
-                <h3>Authentication Required</h3>
-                <p>Scan the QR code below to connect your WhatsApp account.</p>
-                <div id="qrcode" class="qr-code"></div>
-                <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
-                <script>
-                    new QRCode(document.getElementById("qrcode"), {
-                        text: "<%= currentQR %>",
-                        width: 256,
-                        height: 256,
-                        colorDark : "#1e293b",
-                        colorLight : "#ffffff"
-                    });
-                </script>
-            </section>
-        <% } %>
 
         <div class="stats-grid">
             <div class="stats-card card">
