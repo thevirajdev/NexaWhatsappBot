@@ -23,7 +23,10 @@ class WhatsAppClient extends EventEmitter {
                     '--no-first-run',
                     '--no-zygote'
                 ],
-                executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || (process.platform === 'win32' ? 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe' : undefined),
+                executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || 
+                                (process.platform === 'win32' 
+                                    ? 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe' 
+                                    : '/opt/render/project/src/.cache/puppeteer/chrome/linux-146.0.7680.153/chrome-linux64/chrome'),
                 headless: true // CRITICAL: Headless mode for server deployment
             }
         });
