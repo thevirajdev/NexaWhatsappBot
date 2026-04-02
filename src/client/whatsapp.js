@@ -21,15 +21,28 @@ class WhatsAppClient extends EventEmitter {
                     '--disable-dev-shm-usage',
                     '--disable-gpu',
                     '--no-first-run',
-                    '--no-zygote'
+                    '--no-zygote',
+                    '--single-process'
                 ],
                 executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || 
                                 (process.platform === 'win32' 
                                     ? 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe' 
-                                    : '/opt/render/project/src/.cache/puppeteer/chrome/linux-146.0.7680.153/chrome-linux64/chrome'),
-                headless: true // CRITICAL: Headless mode for server deployment
+                                    : '/opt/render/project/src/.cache/puppeteer/chrome/linux-146.0.7680.153/chrome-linux64/chrome' // Fallback
+                                ),
+                headless: true
             }
         });
+
+        // Dynamic Path Fix for Render (search for the latest installed chrome)
+        if (process.platform === 'linux' && !process.env.PUPPETEER_EXECUTABLE_PATH) {
+            const fs = require('fs');
+            const glob = require('glob');
+            const paths = glob.sync('/opt/render/project/src/.cache/puppeteer/chrome/**/chrome-linux64/chrome');
+            if (paths.length > 0) {
+                console.log(`[PUPPETEER] Auto-detected Chrome path: ${paths[0]}`);
+                this.client.options.puppeteer.executablePath = paths[0];
+            }
+        }
 
         this.initializeEvents();
     }

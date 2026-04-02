@@ -19,6 +19,7 @@
     "ejs": "^5.0.1",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
+    "glob": "^10.4.5",
     "google-tts-api": "^2.0.2",
     "mongoose": "^9.3.3",
     "multer": "^2.1.1",

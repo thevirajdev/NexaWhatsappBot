@@ -425,8 +425,21 @@ app.post('/api/agent-upload', upload.single('file'), async (req, res) => {
 const botStartTime = Math.floor(Date.now() / 1000);
 
 whatsappClient.on('qr', (qr) => {
+    console.log('[WA] QR RECEIVED at', new Date().toLocaleTimeString());
     currentQR = qr;
     isReady = false;
+});
+
+whatsappClient.on('loading_screen', (percent, message) => {
+    console.log(`[WA] LOADING SCREEN: ${percent}% - ${message}`);
+});
+
+whatsappClient.on('authenticated', () => {
+    console.log('[WA] AUTHENTICATED SUCCESSFULLY');
+});
+
+whatsappClient.on('auth_failure', (msg) => {
+    console.error('[WA] AUTHENTICATION FAILURE:', msg);
 });
 
 // LISTEN FOR INCOMING VOICE CALLS
