@@ -57,6 +57,18 @@ const pendingReplies = new Map();
 // Track recent AI-generated messages to distinguish them from manual phone replies
 const recentBotMessages = new Map(); // chatId -> { body: string, timestamp: number }
 
+// Cleanup recentBotMessages periodically (every 1 hour) to prevent memory leak
+setInterval(() => {
+    const now = Date.now();
+    const oneHourAgo = now - 3600000;
+    for (const [chatId, data] of recentBotMessages.entries()) {
+        if (data.timestamp < oneHourAgo) {
+            recentBotMessages.delete(chatId);
+        }
+    }
+    console.log(`[CLEANUP] Memory map cleanup complete. Current size: ${recentBotMessages.size}`);
+}, 3600000); 
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
