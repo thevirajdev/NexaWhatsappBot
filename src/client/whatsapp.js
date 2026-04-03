@@ -22,17 +22,11 @@ class WhatsAppClient extends EventEmitter {
                     '--disable-accelerated-2d-canvas',
                     '--no-first-run',
                     '--no-zygote',
-                    '--single-process',
                     '--disable-gpu',
                     '--disable-canvas-aa',
                     '--disable-2d-canvas-clip-aa',
                     '--disable-gl-drawing-for-tests',
                     '--disable-dev-dbus-invocation',
-                    '--disable-cache',
-                    '--disable-application-cache',
-                    '--disable-offline-load-stale-cache',
-                    '--disk-cache-size=0',
-                    '--media-cache-size=0',
                     '--disable-notifications',
                     '--disable-remote-fonts',
                     '--disable-extensions',
@@ -50,7 +44,7 @@ class WhatsAppClient extends EventEmitter {
                                     ? 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe' 
                                     : '/opt/render/project/src/.cache/puppeteer/chrome/linux-146.0.7680.153/chrome-linux64/chrome' // Fallback
                                 ),
-                headless: true
+                headless: 'new'
             }
         });
 
