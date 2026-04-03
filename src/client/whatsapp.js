@@ -5,15 +5,18 @@ const { EventEmitter } = require('events');
 class WhatsAppClient extends EventEmitter {
     constructor() {
         super();
+        const path = require('path');
+        const sessionPath = path.join(process.cwd(), '.wwebjs_auth');
+
         this.client = new Client({
             authStrategy: new LocalAuth({
-                clientId: process.env.SESSION_ID || 'nex-automate'
+                clientId: process.env.SESSION_ID || 'nex-automate',
+                dataPath: sessionPath
             }),
             webVersionCache: {
                 type: 'remote',
                 remotePath: 'https://raw.githubusercontent.com/wwebjs/web-whatsapp-client/main/Remote_v2.3000.1012588385.html'
             },
-            userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36',
             puppeteer: {
                 args: [
                     '--no-sandbox', 
@@ -23,21 +26,8 @@ class WhatsAppClient extends EventEmitter {
                     '--no-first-run',
                     '--no-zygote',
                     '--disable-gpu',
-                    '--disable-canvas-aa',
-                    '--disable-2d-canvas-clip-aa',
-                    '--disable-gl-drawing-for-tests',
-                    '--disable-dev-dbus-invocation',
                     '--disable-notifications',
-                    '--disable-remote-fonts',
-                    '--disable-extensions',
-                    '--disable-background-networking',
-                    '--disable-background-timer-throttling',
-                    '--disable-backgrounding-occluded-windows',
-                    '--disable-breakpad',
-                    '--disable-component-update',
-                    '--disable-default-apps',
-                    '--disable-domain-reliability',
-                    '--disable-sync'
+                    '--disable-extensions'
                 ],
                 executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || null,
                 headless: 'new'
@@ -54,7 +44,6 @@ class WhatsAppClient extends EventEmitter {
                 '/usr/bin/chromium-browser',
                 '/usr/bin/chromium',
                 ...glob.sync('/home/cloud-user/.cache/puppeteer/chrome/**/chrome-linux64/chrome'),
-                ...glob.sync('/opt/render/project/src/.cache/puppeteer/chrome/**/chrome-linux64/chrome'),
                 ...glob.sync('./.cache/puppeteer/chrome/**/chrome-linux64/chrome')
             ];
 
