@@ -39,23 +39,31 @@ class WhatsAppClient extends EventEmitter {
                     '--disable-domain-reliability',
                     '--disable-sync'
                 ],
-                executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || 
-                                (process.platform === 'win32' 
-                                    ? 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe' 
-                                    : '/opt/render/project/src/.cache/puppeteer/chrome/linux-146.0.7680.153/chrome-linux64/chrome' // Fallback
-                                ),
+                executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || null,
                 headless: 'new'
             }
         });
 
-        // Dynamic Path Fix for Render (search for the latest installed chrome)
+        // Auto-detect Chrome path on Linux VPS/Render
         if (process.platform === 'linux' && !process.env.PUPPETEER_EXECUTABLE_PATH) {
             const fs = require('fs');
             const glob = require('glob');
-            const paths = glob.sync('/opt/render/project/src/.cache/puppeteer/chrome/**/chrome-linux64/chrome');
-            if (paths.length > 0) {
-                console.log(`[PUPPETEER] Auto-detected Chrome path: ${paths[0]}`);
-                this.client.options.puppeteer.executablePath = paths[0];
+            const possiblePaths = [
+                '/usr/bin/google-chrome-stable',
+                '/usr/bin/google-chrome',
+                '/usr/bin/chromium-browser',
+                '/usr/bin/chromium',
+                ...glob.sync('/home/cloud-user/.cache/puppeteer/chrome/**/chrome-linux64/chrome'),
+                ...glob.sync('/opt/render/project/src/.cache/puppeteer/chrome/**/chrome-linux64/chrome'),
+                ...glob.sync('./.cache/puppeteer/chrome/**/chrome-linux64/chrome')
+            ];
+
+            for (const path of possiblePaths) {
+                if (fs.existsSync(path)) {
+                    console.log(`[PUPPETEER] Auto-detected Chrome path: ${path}`);
+                    this.client.options.puppeteer.executablePath = path;
+                    break;
+                }
             }
         }
 
