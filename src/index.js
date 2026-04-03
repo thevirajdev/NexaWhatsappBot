@@ -875,8 +875,8 @@ async function generateAndSendReport() {
 }
 
 // Start Express Server FIRST so dashboard is reachable
-const server = app.listen(PORT, () => {
-    console.log(`Dashboard server is LIVE on http://localhost:${PORT}`);
+const server = app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Dashboard server is LIVE on http://0.0.0.0:${PORT}`);
     
     // Then Initialize WhatsApp in the background
     console.log('Initializing WhatsApp client...');
